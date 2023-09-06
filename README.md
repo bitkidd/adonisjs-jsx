@@ -1,4 +1,4 @@
-# Adonis JSX
+# AdonisJS JSX
 > adonis, adonisjs, jsx
 
 [![github-actions-image]][github-actions-url] [![npm-image]][npm-url] [![license-image]][license-url] [![typescript-image]][typescript-url]
@@ -121,10 +121,6 @@ const HelloWorld = () => {
   const { hello } = useSharedData<{ hello: 'world' }>()
 }
 ```
-
-
-[github-actions-image]: https://github.com/adonisjs-jsx/actions/workflows/test.yml
-[github-actions-url]: https://img.shields.io/github/workflow/status/adonisjs-jsx/test?style=for-the-badge "github-actions"
 
 [npm-image]: https://img.shields.io/npm/v/@bitkidd/adonisjs-jsx.svg?style=for-the-badge&logo=npm
 [npm-url]: https://npmjs.org/package/@bitkidd/adonisjs-jsx "npm"
