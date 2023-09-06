@@ -1,13 +1,127 @@
-# @bitkidd/adonisjs-jsx
-> Tagline
+# Adonis JSX
+> adonis, adonisjs, jsx
 
 [![github-actions-image]][github-actions-url] [![npm-image]][npm-url] [![license-image]][license-url] [![typescript-image]][typescript-url]
 
-A short brief
+A AdonisJS v5.x provider for JSX renderer. Use JSX as a templating language on server.
 
 ## Installation
 
+To install the provider run:
+```bash
+npm install @bitkidd/adonis-jsx
+# or
+yarn add @bitkidd/adonis-jsx
+```
+
+## Configure
+
+To configure JSX provider run the command below:
+
+```
+node ace configure @bitkidd/adonis-jsx
+```
+
 ## Usage
+
+#### Basic usage
+
+JSX renderer is exposed in `HttpContextContract` and can be used as follows:
+
+```ts
+...
+public async index({ jsx }: HttpContextContract) {
+  return jsx.render(HelloWorld)
+}
+...
+```
+
+Or you can access JSX rendered directly and render your component anywhere in the app:
+
+```ts
+import { JSX } from '@ioc:Adonis/Addons/JSX'
+
+JSX.render(HelloWorld)
+```
+
+#### Context
+
+A `Context` provider is used to pass `HttpContext`, props and shared data. The hook that is the most important and can be used to access `HttpContextContract` data is `useHttpContext`. Using it you can get anything from the context: authenticated used, csrf token, flash messages, i18n and so on. You'll only have to create a custom hook.
+
+```tsx
+import { useHttpContext } from '@ioc:Adonis/Addons/JSX'
+
+const HelloWorld = () => {
+  const ctx = useHttpContext()
+
+  return ctx?.request.csrfToken ?? ''
+}
+```
+
+#### Hooks
+
+There are some hooks exposed:
+- `useData` that can access data passed to the component when rendering it
+- `useSharedData` that can access data passed to the component using `JSX.share` method
+- `useHttpContext` that can access `HttpContextContract`
+
+The `useHttpContext` can be used to create custom hooks based on some `HttpContext` data:
+
+```tsx
+import { Context } from '@ioc:Adonis/Addons/JSX'
+
+export const useCsrfToken = () => {
+  const ctx = useHttpContext()
+
+  return ctx?.request.csrfToken ?? ''
+}
+```
+
+#### Props in components
+
+You can pass and access data passed into components when rendering them.
+
+In your controller:
+```ts
+...
+public async index({ jsx }: HttpContextContract) {
+  return jsx.render(HelloWorld, { hello: 'world' })
+}
+...
+```
+
+In your component:
+
+```tsx
+const HelloWorld = () => {
+  const { hello } = useData<{ hello: 'world' }>()
+}
+```
+
+#### Shared data
+
+Sometimes you need to share some data between all the components and not pass it every time. 
+
+In this case you have to create a `jsx.ts` file in a `/start` folder and then add this `jsx.ts` file into `.adonisrc.json` in a `preloads` section.
+
+Then you can expose some data inside this file:
+
+```ts
+import { JSX } from '@ioc:Adonis/Addons/JSX'
+
+JSX.share('hello', async () => {
+  return 'world'
+})
+```
+
+And then access it in your components:
+
+```tsx
+const HelloWorld = () => {
+  const { hello } = useSharedData<{ hello: 'world' }>()
+}
+```
+
 
 [github-actions-image]: https://github.com/adonisjs-jsx/actions/workflows/test.yml
 [github-actions-url]: https://img.shields.io/github/workflow/status/adonisjs-jsx/test?style=for-the-badge "github-actions"

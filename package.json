@@ -2,7 +2,8 @@
   "name": "@bitkidd/adonisjs-jsx",
   "version": "1.0.0",
   "description": "A AdonisJS v5.x.x provider for JSX rendering engine",
-  "main": "index.js",
+  "types": "build/adonis-typings/index.d.ts",
+  "main": "build/providers/JsxProvider.js",
   "scripts": {
     "mrm": "mrm --preset=@adonisjs/mrm-preset",
     "pretest": "npm run lint",
@@ -21,9 +22,14 @@
   "author": "Chirill Ceban <cc@bitkidd.dev>",
   "license": "MIT",
   "devDependencies": {
+    "@adonisjs/application": "^5.3.0",
+    "@adonisjs/core": "^5.9.0",
     "@adonisjs/mrm-preset": "^5.0.3",
     "@adonisjs/require-ts": "^2.0.13",
+    "@adonisjs/sink": "^5.4.3",
     "@types/node": "^20.5.0",
+    "@types/react": "^18.2.21",
+    "@types/react-dom": "^18.2.7",
     "commitizen": "^4.3.0",
     "cz-conventional-changelog": "^3.3.0",
     "del-cli": "^5.0.0",
@@ -51,9 +57,11 @@
     "runGhActionsOnWindows": false
   },
   "files": [
+    "build/adonis-typings",
+    "build/providers",
     "build/src",
-    "build/index.d.ts",
-    "build/index.js"
+    "build/instructions.js",
+    "build/instructions.md"
   ],
   "eslintConfig": {
     "extends": [
@@ -93,5 +101,15 @@
   "np": {
     "contents": ".",
     "anyBranch": false
+  },
+  "adonisjs": {
+    "types": "@bitkidd/adonisjs-jsx",
+    "providers": [
+      "@bitkidd/adonisjs-jsx"
+    ]
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   }
 }
