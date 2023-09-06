@@ -9,9 +9,9 @@ A AdonisJS v5.x provider for JSX renderer. Use JSX as a templating language on s
 
 To install the provider run:
 ```bash
-npm install @bitkidd/adonis-jsx
+npm install @bitkidd/adonisjs-jsx
 # or
-yarn add @bitkidd/adonis-jsx
+yarn add @bitkidd/adonisjs-jsx
 ```
 
 ## Configure
@@ -19,7 +19,7 @@ yarn add @bitkidd/adonis-jsx
 To configure JSX provider run the command below:
 
 ```
-node ace configure @bitkidd/adonis-jsx
+node ace configure @bitkidd/adonisjs-jsx
 ```
 
 ## Usage
