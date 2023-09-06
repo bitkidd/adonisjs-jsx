@@ -22,6 +22,17 @@ To configure JSX provider run the command below:
 node ace configure @bitkidd/adonisjs-jsx
 ```
 
+Then modify your `tsconfig.json` file and add two new lines to `compilerOptions` section:
+
+```json
+...
+"compilerOptions": {
+  "lib": ["DOM", "DOM.Iterable", "ESNext"], //ESNext part is up to you
+  "jsx": "react-jsx",
+}
+...
+```
+
 ## Usage
 
 #### Basic usage
