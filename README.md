@@ -23,14 +23,13 @@ node ace configure @bitkidd/adonisjs-jsx
 ```
 
 Then modify your `tsconfig.json` file and add two new lines to `compilerOptions` section:
+(ESNext part is up to you)
 
 ```json
-...
 "compilerOptions": {
-  "lib": ["DOM", "DOM.Iterable", "ESNext"], //ESNext part is up to you
+  "lib": ["DOM", "DOM.Iterable", "ESNext"],
   "jsx": "react-jsx",
 }
-...
 ```
 
 ## Usage
