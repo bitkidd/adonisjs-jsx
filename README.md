@@ -1,7 +1,7 @@
 # AdonisJS JSX
 > adonis, adonisjs, jsx
 
-[![github-actions-image]][github-actions-url] [![npm-image]][npm-url] [![license-image]][license-url] [![typescript-image]][typescript-url]
+[![npm-image]][npm-url] [![license-image]][license-url] [![typescript-image]][typescript-url]
 
 A AdonisJS v5.x provider for JSX renderer. Use JSX as a templating language on server.
 
