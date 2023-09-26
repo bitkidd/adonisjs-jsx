@@ -5,7 +5,7 @@ declare module '@ioc:Adonis/Addons/JSX' {
   export interface JsxRendererContract {
     context: ({ context }: { context: HttpContextContract }) => void
     share: (key: string, data: any) => void
-    render: (element: () => JSX.Element, props?: Record<any, any>) => void
+    render: <T extends Record<string, any>>(component: (props: T) => JSX.Element, props?: T) => void
   }
 
   export const JSX: JsxRendererContract

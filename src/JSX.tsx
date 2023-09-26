@@ -17,12 +17,19 @@ export default class JSX {
     this.#shared[key] = data
   }
 
-  public async render(component: () => JSX.Element, props?: Record<any, any>) {
+  public async render<T extends Record<string, any>>(
+    component: (props: T) => JSX.Element,
+    props?: T
+  ) {
     const Component = component
     const sharedValuesPrepared = {}
 
     for (const key in this.#shared) {
       sharedValuesPrepared[key] = await this.#shared[key]()
+    }
+
+    if (props === undefined) {
+      props = {} as T
     }
 
     return renderToString(
