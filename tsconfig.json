@@ -3,6 +3,8 @@
   "compilerOptions": {
     "lib": ["DOM", "DOM.Iterable", "ESNext"],
     "jsx": "react-jsx",
-    "types": ["@adonisjs/core"]
-  }
+    "types": ["@adonisjs/core"],
+    "skipLibCheck": true
+  },
+  "exclude": ["node_modules", "build"]
 }
