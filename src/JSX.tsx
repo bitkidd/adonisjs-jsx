@@ -18,29 +18,36 @@ export default class JSX {
     this.#shared[key] = fn
   }
 
+  private async processShared() {
+    const sharedValuesPrepared = {}
+
+    for (const key in this.#shared) {
+      const sharedValue = this.#shared[key]
+
+      if (typeof sharedValue === 'function') {
+        sharedValuesPrepared[key] = await sharedValue()
+      } else {
+        sharedValuesPrepared[key] = sharedValue
+      }
+    }
+
+    return sharedValuesPrepared
+  }
+
   public async render<T extends Record<string, any>>(
     component: (props: T) => JSX.Element,
     props?: T
   ) {
-    const ctx = this.#context
-
-    if (!ctx) throw new Error('HTTP context is not provided')
-
     const response = new Promise(async (resolve, reject) => {
       const Component = component
-      const sharedValuesPrepared = {}
-      let streamHasErrored = false
-
-      for (const key in this.#shared) {
-        sharedValuesPrepared[key] = await this.#shared[key](ctx)
-      }
+      const sharedValuesPrepared = await this.processShared()
 
       if (props === undefined) {
         props = {} as T
       }
 
       const { pipe } = renderToPipeableStream(
-        <Context.Provider value={{ ctx, shared: sharedValuesPrepared, props }}>
+        <Context.Provider value={{ ctx: this.#context, shared: sharedValuesPrepared, props }}>
           <Component {...props} />
         </Context.Provider>,
         {
@@ -53,9 +60,6 @@ export default class JSX {
               },
             })
 
-            ctx.response.status(streamHasErrored ? 500 : 200)
-            ctx.response.header('content-type', 'text/html')
-
             pipe(writable)
 
             writable.on('finish', () => {
@@ -63,7 +67,6 @@ export default class JSX {
             })
           },
           onError(error) {
-            streamHasErrored = true
             reject(error)
           },
         }
