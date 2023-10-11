@@ -1,7 +1,9 @@
 import type { HttpContextContract } from '@ioc:Adonis/Core/HttpContext'
 
-import { Writable } from 'stream'
 import { renderToPipeableStream } from 'react-dom/server'
+import { Writable } from 'stream'
+import isBot from 'isbot'
+
 import Context from './Context'
 
 export default class JSX {
@@ -38,35 +40,55 @@ export default class JSX {
     component: (props: T) => JSX.Element,
     props?: T
   ) {
+    const ctx = this.#context
+    const shouldRenderFull =
+      !ctx?.response || (ctx?.response && ctx?.request && isBot(ctx?.request.header('user-agent')))
+    const shouldRenderStreaming =
+      ctx?.response && ctx?.request && !isBot(ctx?.request.header('user-agent'))
+
     const response = new Promise(async (resolve, reject) => {
       const Component = component
       const sharedValuesPrepared = await this.processShared()
+      let streamHasErrors = false
 
       if (props === undefined) {
         props = {} as T
       }
 
       const { pipe } = renderToPipeableStream(
-        <Context.Provider value={{ ctx: this.#context, shared: sharedValuesPrepared, props }}>
+        <Context.Provider value={{ ctx, shared: sharedValuesPrepared, props }}>
           <Component {...props} />
         </Context.Provider>,
         {
           onAllReady() {
-            let content = ''
-            const writable = new Writable({
-              write: function (chunk, _, next) {
-                content += chunk.toString()
-                next()
-              },
-            })
+            if (shouldRenderFull) {
+              let content = ''
+              const writable = new Writable({
+                write: function (chunk, _, next) {
+                  content += chunk.toString()
+                  next()
+                },
+              })
 
-            pipe(writable)
+              pipe(writable)
 
-            writable.on('finish', () => {
-              resolve(content)
-            })
+              writable.on('finish', () => {
+                resolve(content)
+              })
+            }
+          },
+          onShellReady() {
+            if (shouldRenderStreaming) {
+              ctx.response.header('content-type', 'text/html')
+              ctx.response.status(streamHasErrors ? 500 : 200)
+
+              pipe(ctx.response.response)
+
+              resolve(ctx.response)
+            }
           },
           onError(error) {
+            streamHasErrors = true
             reject(error)
           },
         }
