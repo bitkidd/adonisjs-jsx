@@ -79,11 +79,22 @@ export default class JSX {
           },
           onShellReady() {
             if (shouldRenderStreaming) {
+              // This way headers do not work
+              // ctx.response.flushHeaders()
+              // ctx.response.header('content-type', 'text/html')
+              // ctx.response.status(streamHasErrors ? 500 : 200)
+              // pipe(ctx.response.response)
+
+              // This way flash messages do not go away
+              // ctx.response.header('content-type', 'text/html')
+              // ctx.response.status(streamHasErrors ? 500 : 200)
+              // pipe(ctx.response.response)
+
+              // This way E_BAD_CSRF_TOKEN: Invalid CSRF Token
+              // But flash messages work as expected
               ctx.response.header('content-type', 'text/html')
               ctx.response.status(streamHasErrors ? 500 : 200)
-
               pipe(ctx.response.response)
-
               resolve(ctx.response)
             }
           },
