@@ -36,7 +36,47 @@ export default class JSX {
     return sharedValuesPrepared
   }
 
-  public async render<T extends Record<string, any>>(
+  private async renderAsHtml<T extends Record<string, any>>(
+    component: (props: T) => JSX.Element,
+    props?: T
+  ) {
+    return new Promise(async (resolve, reject) => {
+      const Component = component
+      const sharedValuesPrepared = await this.processShared()
+
+      if (props === undefined) {
+        props = {} as T
+      }
+
+      const { pipe } = renderToPipeableStream(
+        <Context.Provider value={{ ctx: this.#context, shared: sharedValuesPrepared, props }}>
+          <Component {...props} />
+        </Context.Provider>,
+        {
+          onAllReady() {
+            let content = ''
+            const writable = new Writable({
+              write: function (chunk, _, next) {
+                content += chunk.toString()
+                next()
+              },
+            })
+
+            pipe(writable)
+
+            writable.on('finish', () => {
+              resolve(content)
+            })
+          },
+          onError(error) {
+            reject(error)
+          },
+        }
+      )
+    })
+  }
+
+  private async renderAsResponse<T extends Record<string, any>>(
     component: (props: T) => JSX.Element,
     props?: T
   ) {
@@ -82,19 +122,6 @@ export default class JSX {
           },
           onShellReady() {
             if (shouldRenderStreaming) {
-              // This way headers do not work
-              // ctx.response.flushHeaders()
-              // ctx.response.header('content-type', 'text/html')
-              // ctx.response.status(streamHasErrors ? 500 : 200)
-              // pipe(ctx.response.response)
-
-              // This way flash messages do not go away
-              // ctx.response.header('content-type', 'text/html')
-              // ctx.response.status(streamHasErrors ? 500 : 200)
-              // pipe(ctx.response.response)
-
-              // This way E_BAD_CSRF_TOKEN: Invalid CSRF Token
-              // But flash messages work as expected
               ctx.response.header('content-type', 'text/html')
               ctx.response.status(streamHasErrors ? 500 : 200)
               ctx.response.flushHeaders()
@@ -114,5 +141,18 @@ export default class JSX {
     ctx!.response.hasLazyBody = true
     ctx!.response.lazyBody = [component, props]
     return ctx!.response
+  }
+
+  public async render<T extends Record<string, any>>(
+    component: (props: T) => JSX.Element,
+    props?: T
+  ) {
+    const ctx = this.#context
+
+    if (!ctx) {
+      return this.renderAsHtml(component, props)
+    } else {
+      return this.renderAsResponse(component, props)
+    }
   }
 }
