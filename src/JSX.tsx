@@ -40,13 +40,15 @@ export default class JSX {
     component: (props: T) => JSX.Element,
     props?: T
   ) {
-    const ctx = this.#context
-    const shouldRenderFull =
-      !ctx?.response || (ctx?.response && ctx?.request && isBot(ctx?.request.header('user-agent')))
-    const shouldRenderStreaming =
-      ctx?.response && ctx?.request && !isBot(ctx?.request.header('user-agent'))
+    const ctx = this.#context!
 
-    const response = new Promise(async (resolve, reject) => {
+    ctx.response['writeJSX'] = async () => {
+      const shouldRenderFull =
+        !ctx?.response ||
+        (ctx?.response && ctx?.request && isBot(ctx?.request.header('user-agent')))
+      const shouldRenderStreaming =
+        ctx?.response && ctx?.request && !isBot(ctx?.request.header('user-agent'))
+
       const Component = component
       const sharedValuesPrepared = await this.processShared()
       let streamHasErrors = false
@@ -73,7 +75,8 @@ export default class JSX {
               pipe(writable)
 
               writable.on('finish', () => {
-                resolve(content)
+                ctx.response.flushHeaders()
+                ctx.response.response.end(content)
               })
             }
           },
@@ -94,18 +97,22 @@ export default class JSX {
               // But flash messages work as expected
               ctx.response.header('content-type', 'text/html')
               ctx.response.status(streamHasErrors ? 500 : 200)
+              ctx.response.flushHeaders()
               pipe(ctx.response.response)
-              resolve(ctx.response)
             }
           },
           onError(error) {
             streamHasErrors = true
-            reject(error)
+            ctx.response.flushHeaders()
+            ctx.response.response.end(error)
           },
         }
       )
-    })
+    }
 
-    return response
+    ctx!.response['writerMethod'] = 'writeJSX'
+    ctx!.response.hasLazyBody = true
+    ctx!.response.lazyBody = [component, props]
+    return ctx!.response
   }
 }
